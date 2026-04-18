@@ -1,6 +1,6 @@
 // Import your audio compressor (assuming you are using ES Modules)
 import { compressAudio } from '../compressors/lossy/audio-mp3.js';
-// Import Kartikay's text compressor and decompressor
+import { FileProcessor } from '../utils/file-reader.js';
 import { compressText, decompressText } from '../compressors/lossless/text-gz.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -50,14 +50,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleFileSelect(file) {
         hideError();
         resultsDashboard.classList.add('hidden');
+        if (verificationStatus) verificationStatus.classList.add('hidden');
 
         if (!file) return;
 
-        // Strict validation based on project requirements
-        const allowedTypes = ['text/plain', 'text/csv', 'image/jpeg', 'image/png', 'audio/mpeg', 'audio/wav', 'video/mp4', 'application/gzip', 'application/x-gzip'];
+        // Strict validation based on project requirements + GZIP support
+        const allowedTypes = [
+            'text/plain', 'text/csv', 'image/jpeg', 'image/png', 
+            'audio/mpeg', 'audio/wav', 'video/mp4', 'application/gzip', 'application/x-gzip'
+        ];
 
-        if (!allowedTypes.includes(file.type)) {
-            showError("Unsupported format. Please upload TXT, CSV, JPG, PNG, MP3, WAV, or MP4.");
+        if (!allowedTypes.includes(file.type) && !file.name.endsWith('.gz')) {
+            showError("Unsupported format. Please upload TXT, CSV, JPG, PNG, MP3, WAV, MP4, or GZ.");
             btnCompress.disabled = true;
             btnDecompress.disabled = true;
             return;
@@ -71,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnDecompress.disabled = false;
     }
 
-    // --- The Master Router ---
+    // --- Compression Logic ---
     btnCompress.addEventListener('click', async () => {
         if (!currentFile) return;
 
@@ -82,28 +86,27 @@ document.addEventListener('DOMContentLoaded', () => {
             let result;
             const fileType = currentFile.type;
 
-            // Route to specific squad member's engine
             if (fileType.startsWith('audio/')) {
                 // YOUR MODULE
                 result = await compressAudio(currentFile);
             } else if (fileType.startsWith('image/')) {
                 // Aryan / Gitesh's module
-                // result = await compressImage(currentFile); 
                 throw new Error("Image module pending integration.");
-            } else if (fileType.startsWith('text/')) {
+            } else if (fileType.startsWith('text/') || currentFile.name.endsWith('.csv')) {
                 // Kartikay's text compression module (pako gzip + SHA-256)
                 result = await compressText(currentFile);
                 lastOriginalHash = result.originalHash;
                 showVerification('compress', result.originalHash);
             } else if (fileType.startsWith('video/')) {
                 // Aryan's video module via Prakhar's background script
-                // result = await processVideoViaWorker(currentFile);
                 throw new Error("Video background worker pending integration.");
+            } else {
+                throw new Error("Cannot compress this file type.");
             }
 
             processedBlob = result.blob;
             updateDashboard(result.metrics);
-            setupDownload(processedBlob, `compressed_${currentFile.name}`);
+            setupDownload(processedBlob, `compressed_${currentFile.name}.gz`);
 
         } catch (error) {
             showError(`Compression failed: ${error.message}`);
@@ -128,17 +131,31 @@ document.addEventListener('DOMContentLoaded', () => {
             // Route .gz files to Kartikay's text decompressor
             if (fileName.endsWith('.gz') || fileType === 'application/gzip' || fileType === 'application/x-gzip') {
                 result = await decompressText(currentFile, lastOriginalHash);
-
-                // Show SHA-256 verification result
+                
                 if (result.verification) {
                     showVerification('decompress', null, result.verification);
                 }
             } else {
-                throw new Error("Decompression for this format is not yet supported.");
+                // Route all other files through Lavisha's FileProcessor architecture
+                result = await FileProcessor.routeDecompression(currentFile);
+
+                // Lavisha's Verification: SHA-256 Hash Check adapted for Kartikay's UI
+                if (result && result.data) {
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', result.data);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                    
+                    showVerification('decompress', null, {
+                        match: lastOriginalHash ? (hashHex === lastOriginalHash) : null,
+                        computed: hashHex,
+                        expected: lastOriginalHash
+                    });
+                }
             }
 
             processedBlob = result.blob;
-            updateDashboard(result.metrics);
+            // Update metrics if the decompression function returns them
+            if (result.metrics) updateDashboard(result.metrics);
 
             // Determine decompressed filename
             let downloadName = fileName.endsWith('.gz')
