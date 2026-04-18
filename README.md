@@ -61,7 +61,7 @@ macs-file-compressor/
 │   ├── sample_audio.wav
 │   └── sample_video.mp4
 └── .gitignore
-
+```
 ## Member vs File vs Work Intended
 
 | Team Member | File(s) Assigned | Work Intended |
