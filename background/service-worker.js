@@ -1,8 +1,9 @@
+import { compressLosslessPNG } from '../scripts/compressors/lossless/image-png.js';
+import { getCompressionRatio, getSpaceSavings } from '../scripts/utils/metrics.js';
 let keepAliveInterval = null;
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'START_COMPRESSION') {
-    // 1. Immediately trigger a 20-second keep-alive mechanism
     // Calling chrome.runtime.getPlatformInfo() prevents Chrome from terminating the service worker during heavy WASM tasks
     keepAliveInterval = setInterval(() => {
       chrome.runtime.getPlatformInfo((info) => {
@@ -10,7 +11,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
     }, 20000);
 
-    // 2. Pass payload to the async handler
+    //Pass payload to the async handler
     handleCompressionTask(message.payload)
       .then((result) => {
         // Clear interval upon completion
@@ -38,8 +39,9 @@ async function handleCompressionTask(payload) {
   const startTime = performance.now();
   const fileType = payload?.fileType || 'unknown';
 
-  // 3. Switch statement routing based on fileType
+  //Switch statement routing based on fileType
   switch (fileType) {
+
     case 'video/mp4':
       console.log('Processing video/mp4: Logic for processing mp4 will go here.');
       break;
@@ -47,7 +49,10 @@ async function handleCompressionTask(payload) {
       console.log('Processing image/jpeg: Logic for processing jpeg will go here.');
       break;
     case 'image/png':
-      console.log('Processing image/png: Logic for processing png will go here.');
+      // Hand the raw file to Gitesh's compressor and wait for the result
+      compressedData = await compressLosslessPNG(fileData);
+      metrics.spaceSavings = getSpaceSavings(originalSize, compressedData.byteLength);
+      metrics.ratio = getCompressionRatio(originalSize, compressedData.byteLength);
       break;
     case 'text/plain':
       console.log('Processing text/plain: Logic for processing plain text will go here.');
@@ -56,16 +61,16 @@ async function handleCompressionTask(payload) {
       console.log(`Unsupported file type received: ${fileType}`);
   }
 
-  // 4. Calculate time taken
+  //Calculate time taken
   const endTime = performance.now();
   const timeTakenMs = endTime - startTime;
 
-  // 5. Return the mock success object structure
+  //Return the mock success object structure
   return {
-    processedBuffer: new ArrayBuffer(0), // Mock empty buffer
+    processedBuffer: new ArrayBuffer(0),
     metrics: {
-      originalSize: payload?.size || 1024 * 1024, // Mock original size
-      compressedSize: 512 * 1024,                  // Mock compressed size
+      originalSize: payload?.size || 1024 * 1024,
+      compressedSize: 512 * 1024,
       timeTakenMs: timeTakenMs
     }
   };
