@@ -131,22 +131,6 @@ web-compressor-main/
 
 ---
 
-## Compression Results
-
-> Results measured on representative sample files.
-
-| File Type | Original Size | Compressed Size | Compression Ratio | Space Savings |
-|---|---|---|---|---|
-| Text / CSV (`.txt`, `.csv`) | — | — | — | — |
-| Image — Lossless PNG (`.png`) | — | — | — | — |
-| Image — Lossy JPEG (`.jpg`) | — | — | — | — |
-| Audio — MP3 (`.wav` → `.mp3`) | — | — | — | — |
-| Video — MP4 H.264 (`.mp4`) | — | — | — | — |
-
-> *(Results to be filled in after final benchmarking.)*
-
----
-
 ## Rebuild Verification
 
 ### Lossless Files (Text, PNG)
