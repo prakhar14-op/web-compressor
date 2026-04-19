@@ -56,7 +56,12 @@ export async function compressMP4(file) {
     const outputName = 'output.mp4';
     const psnrLog = 'psnr_stats.log';
 
-    ffmpeg.FS('writeFile', inputName, await fetchFile(file));
+    // Remove the old fetchFile line:
+// ffmpeg.FS('writeFile', inputName, await fetchFile(file));
+
+// Add this instead: It reads the file natively and forces it into the WebAssembly filesystem
+const arrayBuffer = await file.arrayBuffer();
+ffmpeg.FS('writeFile', inputName, new Uint8Array(arrayBuffer));
 
     await ffmpeg.run('-i', inputName, '-c:v', 'libx264', '-crf', String(crf), '-preset', 'ultrafast', '-c:a', 'aac', '-b:a', '128k', '-y', outputName);
 
@@ -100,7 +105,12 @@ export async function decompressMP4(file) {
     const inputName = 'decomp_input.mp4';
     const outputName = 'decomp_output.mp4';
 
-    ffmpeg.FS('writeFile', inputName, await fetchFile(file));
+    // Remove the old fetchFile line:
+// ffmpeg.FS('writeFile', inputName, await fetchFile(file));
+
+// Add this instead: It reads the file natively and forces it into the WebAssembly filesystem
+const arrayBuffer = await file.arrayBuffer();
+ffmpeg.FS('writeFile', inputName, new Uint8Array(arrayBuffer));
     await ffmpeg.run('-i', inputName, '-c:v', 'libx264', '-crf', '0', '-preset', 'ultrafast', '-c:a', 'copy', '-y', outputName);
 
     const decompressedData = ffmpeg.FS('readFile', outputName);

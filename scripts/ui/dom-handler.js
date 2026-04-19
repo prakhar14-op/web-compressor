@@ -56,9 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!file) return;
 
         // Strict validation based on project requirements + GZIP support
+        // Find this array and add 'application/pdf'
         const allowedTypes = [
             'text/plain', 'text/csv', 'image/jpeg', 'image/png', 
-            'audio/mpeg', 'audio/wav', 'video/mp4', 'application/gzip', 'application/x-gzip'
+            'audio/mpeg', 'audio/wav', 'video/mp4', 'application/gzip', 'application/x-gzip',
+            'application/pdf' 
         ];
 
         if (!allowedTypes.includes(file.type) && !file.name.endsWith('.gz')) {
@@ -99,11 +101,12 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (fileType === 'video/mp4') {
                 result = await compressMP4(currentFile);
             } 
-            else if (fileType.startsWith('text/') || currentFile.name.endsWith('.csv')) {
+            // Find your COMPRESSION MASTER ROUTER and update the text/csv `else if` block:
+            else if (fileType.startsWith('text/') || currentFile.name.endsWith('.csv') || fileType === 'application/pdf') {
                 result = await compressText(currentFile);
                 lastOriginalHash = result.originalHash;
                 showVerification('compress', result.originalHash);
-            } 
+            }
             else {
                 throw new Error("Cannot compress this file type.");
             }
