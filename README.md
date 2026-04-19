@@ -48,7 +48,7 @@ Team Name: Stochastic
 
 Everyone had a fair distribution of work of approx 16.7%
 
-- **Soumya** — Built the dark-themed glassmorphism UI, wired all DOM event listeners for file input/output interactions, and implemented `lamejs` for in-browser MP3 audio compression.
+- **Soumya** — Built the light-themed glassmorphism UI, wired all DOM event listeners for file input/output interactions, and implemented `lamejs` for in-browser MP3 audio compression.
 - **Aryan Manu** — Implemented spatial redundancy algorithms for lossy JPEG image compression via `jpeg-js` and handled temporal redundancy reduction for video via `ffmpeg.wasm`.
 - **Kartikay** — Wrote dictionary-based DEFLATE/gzip text compression using `pako` and utilized the SubtleCrypto Web API to generate SHA-256 hashes for lossless rebuild verification.
 - **Lavisha** — Managed browser memory using the FileReader API to safely chunk heavy file uploads and built the master routing logic for the reverse decompression pipeline.
