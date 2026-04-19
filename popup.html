@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MACS-FC</title>
     <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
     <div class="glass-container">
         <header>
@@ -15,10 +17,10 @@
 
         <main>
             <div class="upload-zone" id="drop-zone">
-                <input type="file" id="file-input" class="file-input" accept=".txt,.csv,.jpg,.png,.mp3,.wav,.mp4,.pdf,.gz">
+                <input type="file" id="file-input" class="file-input" accept=".txt,.csv,.jpg,.png,.mp3,.wav,.mp4,.pdf">
                 <label for="file-input" class="upload-label">
                     <span id="file-name">Click or drag file here</span>
-                    <span class="file-types">Supported: TXT, CSV, JPG, PNG, MP3, WAV, MP4, PDF, GZ</span>
+                    <span class="file-types">Supported: TXT, CSV, JPG, PNG, MP3, WAV, MP4, PDF</span>
                 </label>
             </div>
 
@@ -31,7 +33,7 @@
 
             <div id="results-dashboard" class="dashboard hidden">
                 <h3>Processing Results</h3>
-                
+
                 <div class="metrics-grid">
                     <div class="metric-card">
                         <span class="metric-label">Original</span>
@@ -59,10 +61,9 @@
     </div>
 
     <script src="lib/lamejs.min.js"></script>
-    <script src="lib/pako.min.js"></script>
-    <script src="lib/upng.min.js"></script>
-    <script src="lib/jpeg-js.min.js"></script> <script src="lib/ffmpeg.min.js"></script>
+    <script src="lib/pdf-lib.min.js"></script>
 
     <script src="scripts/ui/dom-handler.js" type="module"></script>
 </body>
+
 </html>

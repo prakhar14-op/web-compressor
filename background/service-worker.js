@@ -43,7 +43,52 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
         sendResponse({ status: "Keep-alive deactivated" });
     }
+    else if (message.action === 'FETCH_VIDEO') {
+        fetchExternalVideo(message.url).then(sendResponse);
+    }
 
     // Return true to keep the message channel open for async responses
     return true; 
 });
+
+/**
+ * Fetches an external video URL, correctly parses the blob, 
+ * and returns it as a safely transmittable Data URL for the UI.
+ * 
+ * @param {string} url - The external URL to fetch
+ */
+async function fetchExternalVideo(url) {
+    try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Network error: ${response.status}`);
+        }
+
+        // 1. Properly handle as a Blob to protect the binary data stream
+        const videoBlob = await response.blob();
+
+        // 2. Read into an ArrayBuffer
+        const arrayBuffer = await videoBlob.arrayBuffer();
+        
+        // 3. Convert to Base64 in a loop to prevent call stack issues
+        let binaryString = '';
+        const bytes = new Uint8Array(arrayBuffer);
+        // Using a tight loop for performance scaling
+        for (let i = 0; i < bytes.length; i++) {
+            binaryString += String.fromCharCode(bytes[i]);
+        }
+        
+        const base64Data = btoa(binaryString);
+        
+        // 4. Return as a clean Data URL so the popup interface can reconstruct it
+        return { 
+            success: true, 
+            dataUrl: `data:${videoBlob.type};base64,${base64Data}` 
+        };
+
+    } catch (error) {
+        console.error("External Fetch Error:", error);
+        return { success: false, error: error.message };
+    }
+}

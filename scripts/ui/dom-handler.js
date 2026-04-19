@@ -1,9 +1,5 @@
 import { compressAudio } from '../compressors/lossy/audio-mp3.js';
-import { compressText, decompressText } from '../compressors/lossless/text-gz.js';
-import { compressLosslessPNG } from '../compressors/lossless/image-png.js';
-import { compressJPG, decompressJPG } from '../compressors/lossy/image-jpg.js';
-import { compressMP4, decompressMP4 } from '../compressors/lossy/video-mp4.js';
-import { FileProcessor } from '../utils/file-reader.js';
+import { compressPDF } from '../compressors/lossless/document-pdf.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
@@ -58,9 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Strict validation based on project requirements + GZIP support
         // Find this array and add 'application/pdf'
         const allowedTypes = [
-            'text/plain', 'text/csv', 'image/jpeg', 'image/png', 
+            'text/plain', 'text/csv', 'image/jpeg', 'image/png',
             'audio/mpeg', 'audio/wav', 'video/mp4', 'application/gzip', 'application/x-gzip',
-            'application/pdf' 
+            'application/pdf'
         ];
 
         if (!allowedTypes.includes(file.type) && !file.name.endsWith('.gz')) {
@@ -91,16 +87,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (fileType.startsWith('audio/')) {
                 result = await compressAudio(currentFile);
-            } 
+            }
             else if (fileType === 'image/png') {
                 result = await compressLosslessPNG(currentFile);
-            } 
+            }
             else if (fileType === 'image/jpeg' || fileType === 'image/jpg') {
                 result = await compressJPG(currentFile);
-            } 
+            }
             else if (fileType === 'video/mp4') {
                 result = await compressMP4(currentFile);
-            } 
+            }
             // Find your COMPRESSION MASTER ROUTER and update the text/csv `else if` block:
             else if (fileType.startsWith('text/') || currentFile.name.endsWith('.csv') || fileType === 'application/pdf') {
                 result = await compressText(currentFile);
@@ -113,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             processedBlob = result.blob;
             updateDashboard(result.metrics, result.psnr);
-            
+
             // Handle output extensions
             let ext = currentFile.name.split('.').pop();
             if (fileType.startsWith('text/') || ext === 'csv') ext = ext + '.gz';
@@ -145,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (result.verification) {
                     showVerification('decompress', null, result.verification);
                 }
-            } 
+            }
             // 2. JPG Routing
             else if (fileType === 'image/jpeg' || fileType === 'image/jpg') {
                 result = await decompressJPG(currentFile);
@@ -157,14 +153,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // 4. Fallback (PNG, Audio) via FileProcessor
             else {
                 const readerRes = await FileProcessor.routeDecompression(currentFile);
-                result = { 
+                result = {
                     blob: new Blob([readerRes.data], { type: currentFile.type }),
                     metrics: { originalSize: '--', compressedSize: '--', ratio: 'N/A', savings: 'N/A' }
                 };
             }
 
             processedBlob = result.blob;
-            
+
             if (result.metrics) {
                 updateDashboard(result.metrics, result.psnr);
             }
